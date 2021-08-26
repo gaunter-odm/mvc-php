@@ -6,7 +6,8 @@ error_reporting(E_ALL);
 function debug($str)
 {
 	echo '<pre>';
-	var_dump($str);
+	var_dump($str, true);
+	// echo var_export($str, true);
 	echo '</pre>';
 	exit;
 }
