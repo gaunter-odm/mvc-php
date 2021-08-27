@@ -7,9 +7,13 @@ use application\core\Controller;
 class MainController extends Controller
 {
 
+	public function before()
+	{
+		$this->view->layout = 'custom';
+	}
+
 	public function indexAction()
 	{
-		echo 'Home page';
-		debug($this->route);
+		$this->view->render('Home');
 	}
 }
