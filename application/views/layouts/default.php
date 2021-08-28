@@ -22,6 +22,11 @@
 	</ul>
 
 	<style>
+		body {
+			font-family: arial, tahoma, sans-serif;
+			width: 100vw;
+		}
+
 		ul,
 		li {
 			margin: 0;
@@ -50,6 +55,14 @@
 
 		a::first-letter {
 			text-transform: uppercase;
+		}
+
+		.msg {
+			display: inline-block;
+			padding: 5px 20px;
+			border-radius: 3px;
+			border: 1px solid #2e2e2e;
+			margin: 0 auto 40px;
 		}
 	</style>
 	<? echo $content; ?>

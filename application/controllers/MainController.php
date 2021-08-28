@@ -7,13 +7,14 @@ use application\core\Controller;
 class MainController extends Controller
 {
 
-	public function before()
-	{
-		$this->view->layout = 'custom';
-	}
 
 	public function indexAction()
 	{
-		$this->view->render('Home');
+		$this->model->getNews();
+
+		$this->view->render('Home', [
+			'name' => 'Vitalii',
+			'age' => 27
+		]);
 	}
 }

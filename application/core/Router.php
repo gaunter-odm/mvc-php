@@ -2,6 +2,8 @@
 
 namespace application\core;
 
+use application\core\View;
+
 class Router
 {
 	protected $routes = [];
@@ -45,13 +47,13 @@ class Router
 					$controller = new $path($this->params);
 					$controller->$action();
 				} else {
-					echo '<b>Action not defined: </b>' . $action;
+					View::errorCode(404);
 				}
 			} else {
-				echo '<b>Controller not defined:</b> ' . $path;
+				View::errorCode(404);
 			}
 		} else {
-			echo "<h1>404</h1><a href='/'>Home</a>";
+			View::errorCode(404);
 		}
 	}
 }
