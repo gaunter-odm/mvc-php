@@ -3,48 +3,125 @@
 namespace application\lib;
 
 use PDO;
-
+use PDOException;
 
 class DB
 {
-	protected $db;
+	private $db;
 
 	public function __construct()
 	{
-		extract(_config('db'));
-		$this->db = new PDO("mysql:host=$host;dbname=$name;", $user, $password);
-	}
+		$db_conf = _config('db');
 
-	public function query($sql, $params = [])
-	{
-		$stmt = $this->db->prepare($sql);
-		$stmt->execute($params);
-	}
 
-	public function add_user(string $name, int $age, string $email)
-	{
-		// echo password_hash($email, PASSWORD_DEFAULT);
-		echo password_verify($email, "$2y$10$25KvK/5lOm0imTj9VjwkG.Uf2T7U23U83DaRuyDzqG57mxnV5JuU.");
-		if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-			echo '<div class="msg">Не корректный email</div>';
-		} else {
-			$stmt = $this->db->prepare('INSERT INTO users (`name`, `age`, `email`) VALUES (:name, :age, :email)');
-			$stmt->execute(
+		try {
+			$this->db = new PDO(
+				"mysql:host={$db_conf['host']};dbname={$db_conf['name']};",
+				$db_conf['user'],
+				$db_conf['password'],
 				[
-					'name' => $name,
-					'age' => $age,
-					'email' => $email,
+					PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+					PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
 				]
 			);
-
-			// echo $stmt->errorCode();
-			print_error($stmt->errorCode());
+		} catch (PDOException $error) {
+			die('Ошибка подключения к базе данных:  ' . $error->getCode());
 		}
 	}
 
-	public function del_user($name)
+	public function __destruct()
 	{
-		$stmt = $this->db->prepare('DELETE FROM users WHERE name = :name');
-		return $stmt->execute(['name' => $name]);
+		$this->db = null;
+	}
+
+	public function insert(string $table, array $array)
+	{
+		$params = $values = '';
+
+		foreach ($array as $key => $value) {
+			$params .= $key . ', ';
+			$values .= ':' . $key . ', ';
+		}
+
+		$params = trim($params, ', ');
+		$values = trim($values, ', ');
+
+		$sql = "INSERT INTO $table ($params) VALUES ($values)";
+
+		try {
+
+			$this->startTransaction();
+			$stmt = $this->db->prepare($sql);
+			$stmt->execute($array);
+		} catch (PDOException $error) {
+			preg_match("/'\w+'/", $error->getMessage(), $match);
+			echo ($error->getCode() == "23000" ? "Dublicate" : $error->getCode()) . " | " . $match[0]  . '<br>' . $error->getMessage();
+			$this->rollBack();
+		}
+		return $this->commit();
+	}
+
+	public function select_pass(string $identifier)
+	{
+		$sql = "SELECT passwd FROM users WHERE username = :identifier OR email = :identifier";
+
+		try {
+			$stmt = $this->db->prepare($sql);
+			$stmt->execute(['identifier' => $identifier]);
+			$this->db  = null;
+			return $stmt->fetch();
+		} catch (PDOException $error) {
+			$this->db  = null;
+			die($error->getMessage());
+		}
+	}
+
+	public function select_name(string $identifier)
+	{
+		$sql = "SELECT name FROM users WHERE username = :identifier OR email = :identifier";
+
+		try {
+			$stmt = $this->db->prepare($sql);
+			$stmt->execute(['identifier' => $identifier]);
+			$this->db  = null;
+			return $stmt->fetch();
+		} catch (PDOException $error) {
+			$this->db  = null;
+			die($error->getMessage());
+		}
+	}
+
+	public function auth_date($identifier)
+	{
+		$sql = "SELECT uuid, name, role, avatar FROM users WHERE username = :identifier OR email = :identifier";
+		try {
+			$stmt = $this->db->prepare($sql);
+			$stmt->execute(['identifier' => $identifier]);
+			$this->db  = null;
+			return $stmt->fetch();
+		} catch (PDOException $error) {
+			$this->db  = null;
+			die($error->getMessage());
+		}
+	}
+
+	private function startTransaction()
+	{
+		if (!$this->db->inTransaction())
+			$this->db->beginTransaction();
+	}
+
+	private function commit()
+	{
+		if ($this->db->inTransaction()) {
+			return $this->db->commit();
+		}
+	}
+
+	private function rollBack()
+	{
+		if ($this->db->inTransaction()) {
+			$this->db->rollBack();
+		}
 	}
 }

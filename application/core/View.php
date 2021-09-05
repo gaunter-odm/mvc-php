@@ -8,8 +8,9 @@ class View
 	public $route;
 	public $layout = 'default';
 
-	public function __construct($route)
+	public function __construct($route, $user)
 	{
+		$this->user = $user;
 		$this->route = $route;
 		$this->path = $route['controller'] . '/' . $route['action'];
 	}
@@ -35,5 +36,11 @@ class View
 	{
 		header("location: $url");
 		exit;
+	}
+
+	public function account_link()
+	{
+		if (isset($this->user->name))
+			return 1;
 	}
 }

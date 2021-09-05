@@ -8,6 +8,6 @@ class Main extends Model
 {
 	public function getNews()
 	{
-		debug($this->db);
+		// echo 'news';
 	}
 }

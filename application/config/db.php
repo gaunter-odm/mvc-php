@@ -1,6 +1,6 @@
 <?php return [
 	'host' => 'localhost',
-	'name' => 'vitalii',
-	'user' => 'vitalii',
-	'password' => 'dadsBqKIY9LzuWyq'
+	'name' => 'mvc_lessons',
+	'user' => 'Vitalii',
+	'password' => 'NXoh7zKJOFxhFTz8'
 ];
